@@ -28,8 +28,8 @@
 		async = module.parent.require('async'),
 
 		constants = Object.freeze({
-			type: '',	// Either 'oauth' or 'oauth2'
-			name: '',	// Something unique to your OAuth provider in lowercase, like "github", or "nodebb"
+			type: 'oauth2',	// Either 'oauth' or 'oauth2'
+			name: 'kys',	// Something unique to your OAuth provider in lowercase, like "github", or "nodebb"
 			oauth: {
 				requestTokenURL: '',
 				accessTokenURL: '',
@@ -38,12 +38,12 @@
 				consumerSecret: ''
 			},
 			oauth2: {
-				authorizationURL: '',
-				tokenURL: '',
-				clientID: '',
+				authorizationURL: 'http://www.keep-your-soul.com/api/oauth/auth',
+				tokenURL: 'http://www.keep-your-soul.com/api/oauth/token',
+				clientID: 'forum',
 				clientSecret: ''
 			},
-			userRoute: ''	// This is the address to your app's "user profile" API endpoint (expects JSON)
+			userRoute: 'http://www.keep-your-soul.com/api/oauth/userData'	// This is the address to your app's "user profile" API endpoint (expects JSON)
 		}),
 		configOk = false,
 		OAuth = {}, passportOAuth, opts;
@@ -63,26 +63,7 @@
 			passportOAuth = require('passport-oauth')[constants.type === 'oauth' ? 'OAuthStrategy' : 'OAuth2Strategy'];
 
 			if (constants.type === 'oauth') {
-				// OAuth options
-				opts = constants.oauth;
-				opts.callbackURL = nconf.get('url') + '/auth/' + constants.name + '/callback';
-
-				passportOAuth.Strategy.prototype.userProfile = function(token, secret, params, done) {
-					this._oauth.get(constants.userRoute, token, secret, function(err, body, res) {
-						if (err) { return done(new InternalOAuthError('failed to fetch user profile', err)); }
-
-						try {
-							var json = JSON.parse(body);
-							OAuth.parseUserReturn(json, function(err, profile) {
-								if (err) return done(err);
-								profile.provider = constants.name;
-								done(null, profile);
-							});
-						} catch(e) {
-							done(e);
-						}
-					});
-				};
+				//ignore. should not happen.
 			} else if (constants.type === 'oauth2') {
 				// OAuth 2 options
 				opts = constants.oauth2;
@@ -150,10 +131,6 @@
 		// Do you want to automatically make somebody an admin? This line might help you do that...
 		// profile.isAdmin = data.isAdmin ? true : false;
 
-		// Delete or comment out the next TWO (2) lines when you are ready to proceed
-		process.stdout.write('===\nAt this point, you\'ll need to customise the above section to id, displayName, and emails into the "profile" object.\n===');
-		return callback(new Error('Congrats! So far so good -- please see server log for details'));
-
 		callback(null, profile);
 	}
 
@@ -165,6 +142,9 @@
 
 			if (uid !== null) {
 				// Existing User
+				
+				User.setUserField(uid, "username", payload.handle); //change name
+
 				callback(null, {
 					uid: uid
 				});
@@ -188,7 +168,7 @@
 					}
 				};
 
-				User.getUidByEmail(payload.email, function(err, uid) {
+				User.getUidByUsername(payload.handle, function(err, uid) {
 					if(err) {
 						return callback(err);
 					}

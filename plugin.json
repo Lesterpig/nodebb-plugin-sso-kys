@@ -1,8 +1,8 @@
 {
-	"id": "nodebb-plugin-sso-oauth",
-	"name": "NodeBB OAuth SSO",
-	"description": "NodeBB Plugin that allows users to login/register via any configured OAuth provider.",
-	"url": "https://github.com/julianlam/nodebb-plugin-sso-oauth",
+	"id": "nodebb-plugin-sso-kys",
+	"name": "NodeBB Keep Your Soul SSO",
+	"description": "NodeBB Plugin that allows users to login/register via Keep Your Soul.",
+	"url": "https://github.com/Lesterpig/nodebb-plugin-sso-kys",
 	"library": "./library.js",
 	"hooks": [
 		{ "hook": "filter:user.delete", "method": "deleteUserData" },
